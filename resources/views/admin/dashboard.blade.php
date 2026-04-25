@@ -5,14 +5,36 @@
 
 @section('content')
 <div class="p-8 space-y-8 flex-1">
+    
+    <!-- Library Info Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/5 p-6 rounded-3xl border border-white/10">
+        <div>
+            <h1 class="text-3xl font-bold text-white">{{ $library->library_name }}</h1>
+            <p class="text-gray-400 flex items-center mt-1">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                {{ $library->address }}
+            </p>
+        </div>
+        <div class="flex gap-4">
+            <div class="text-right">
+                <p class="text-xs text-gray-500 uppercase">Timing</p>
+                <p class="text-indigo-400 font-medium">{{ $library->opening_time }} - {{ $library->closing_time }}</p>
+            </div>
+            <div class="text-right border-l border-white/10 pl-4">
+                <p class="text-xs text-gray-500 uppercase">Capacity</p>
+                <p class="text-emerald-400 font-medium">{{ $library->total_seats }} Seats</p>
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Stat Card 1 -->
         <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300">
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all duration-300"></div>
             <div class="flex justify-between items-start">
                 <div>
-                    <p class="text-sm font-medium text-gray-400 mb-1">Total Seats</p>
-                    <h3 class="text-3xl font-bold text-white">{{ $totalSeats }}</h3>
+                    <p class="text-sm font-medium text-gray-400 mb-1">Total Seats (System)</p>
+                    <h3 class="text-3xl font-bold text-white">{{ $totalSeatsCount }}</h3>
                 </div>
                 <div class="p-3 rounded-xl bg-blue-500/10 text-blue-400">
                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -64,12 +86,12 @@
     </div>
 
     <!-- Quick Action -->
-    <div class="glass-panel p-8 rounded-2xl border-l-4 border-l-blue-500 flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-blue-900/10 to-transparent">
+    <div class="glass-panel p-8 rounded-2xl border-l-4 border-l-indigo-500 flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-indigo-900/10 to-transparent">
         <div class="mb-4 md:mb-0">
-            <h3 class="text-xl font-bold text-white mb-2">Welcome to your new Dashboard</h3>
+            <h3 class="text-xl font-bold text-white mb-2">Welcome, {{ $library->owner_name }}!</h3>
             <p class="text-gray-400">Your core system is up and running. Time to add some physical library seats into the system!</p>
         </div>
-        <a href="{{ route('seats.index') }}" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-1">
+        <a href="{{ route('seats.index') }}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg shadow-indigo-500/20 transition-all transform hover:-translate-y-1">
             + Add New Seat
         </a>
     </div>

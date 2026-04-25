@@ -5,34 +5,53 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Student;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Session;
 
 class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::orderBy('name')->get();
+        $libraryId = Session::get('library_id');
+        $students = Student::where('library_id', $libraryId)->orderBy('name')->get();
         return view('admin.students.index', compact('students'));
     }
 
     public function store(Request $request)
     {
+        $libraryId = Session::get('library_id');
+        
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone_number' => 'required|string|unique:students|max:20',
+            'phone_number' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('students')->where('library_id', $libraryId)
+            ],
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
         ]);
 
-        Student::create($request->all());
+        $data = $request->all();
+        $data['library_id'] = $libraryId;
+        Student::create($data);
 
         return redirect()->back()->with('success', 'Student registered successfully!');
     }
 
     public function update(Request $request, Student $student)
     {
+        $libraryId = Session::get('library_id');
+
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone_number' => 'required|string|max:20|unique:students,phone_number,'.$student->id,
+            'phone_number' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('students')->where('library_id', $libraryId)->ignore($student->id)
+            ],
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
         ]);

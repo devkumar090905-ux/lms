@@ -7,15 +7,17 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Student;
 use App\Models\Seat;
+use Illuminate\Support\Facades\Session;
 
 class BookingController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::with('student', 'seat')->orderBy('created_at', 'desc')->get();
-        $students = Student::orderBy('name')->get();
+        $libraryId = Session::get('library_id');
+        $bookings = Booking::with('student', 'seat')->where('library_id', $libraryId)->orderBy('created_at', 'desc')->get();
+        $students = Student::where('library_id', $libraryId)->orderBy('name')->get();
         // Only show seats that are available
-        $availableSeats = Seat::where('status', 'available')->orderBy('seat_number')->get();
+        $availableSeats = Seat::where('library_id', $libraryId)->where('status', 'available')->orderBy('seat_number')->get();
         
         return view('admin.bookings.index', compact('bookings', 'students', 'availableSeats'));
     }
@@ -38,7 +40,9 @@ class BookingController extends Controller
         }
 
         // Create booking
-        Booking::create($request->all());
+        $data = $request->all();
+        $data['library_id'] = Session::get('library_id');
+        Booking::create($data);
 
         // Mark seat as occupied
         $seat->update(['status' => 'occupied']);

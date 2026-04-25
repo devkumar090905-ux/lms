@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Seat extends Model
 {
-    protected $fillable = ['seat_number', 'status'];
+    protected $fillable = ['library_id', 'seat_number', 'status'];
+
+    public function library()
+    {
+        return $this->belongsTo(LibrarySetting::class);
+    }
 
     public function bookings()
     {

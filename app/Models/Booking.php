@@ -7,8 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Booking extends Model
 {
     protected $fillable = [
-        'student_id', 'seat_id', 'shift_type', 'start_date', 'end_date', 'payment_status', 'total_amount'
+        'library_id', 'student_id', 'seat_id', 'shift_type', 'start_date', 'end_date', 'payment_status', 'total_amount'
     ];
+
+    public function library()
+    {
+        return $this->belongsTo(LibrarySetting::class);
+    }
 
     protected $casts = [
         'start_date' => 'date',

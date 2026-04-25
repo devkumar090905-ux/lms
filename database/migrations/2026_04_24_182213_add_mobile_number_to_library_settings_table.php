@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('seats', function (Blueprint $table) {
-            $table->id();
-            $table->string('seat_number');
-            $table->enum('status', ['available', 'occupied', 'maintenance'])->default('available');
-            $table->timestamps();
+        Schema::table('library_settings', function (Blueprint $table) {
+            $table->string('mobile_number')->nullable()->after('email');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('seats');
+        Schema::table('library_settings', function (Blueprint $table) {
+            $table->dropColumn('mobile_number');
+        });
     }
 };

@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Seat;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Session;
 
 class SeatController extends Controller
 {
     public function index()
     {
-        $seats = Seat::orderBy('seat_number')->get();
+        $libraryId = Session::get('library_id');
+        $seats = Seat::where('library_id', $libraryId)->orderBy('seat_number')->get();
         return view('admin.seats.index', compact('seats'));
     }
 
@@ -26,12 +29,15 @@ class SeatController extends Controller
         $start = $request->input('start_number');
         $end = $request->input('end_number');
 
+        $libraryId = Session::get('library_id');
+
         $seatsToInsert = [];
         for ($i = $start; $i <= $end; $i++) {
             $seatNumber = $prefix . $i;
-            // Check if exists to avoid bulk insert crashes
-            if (!Seat::where('seat_number', $seatNumber)->exists()) {
+            // Check if exists to avoid bulk insert crashes within the same library
+            if (!Seat::where('library_id', $libraryId)->where('seat_number', $seatNumber)->exists()) {
                 $seatsToInsert[] = [
+                    'library_id' => $libraryId,
                     'seat_number' => $seatNumber,
                     'status' => 'available',
                     'created_at' => now(),
