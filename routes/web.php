@@ -25,21 +25,26 @@ Route::prefix('super-admin')->group(function () {
     Route::get('/library/{id}/edit', [SuperAdminController::class, 'editLibrary'])->name('superadmin.library.edit');
     Route::put('/library/{id}/update', [SuperAdminController::class, 'updateLibrary'])->name('superadmin.library.update');
     Route::delete('/library/{id}/delete', [SuperAdminController::class, 'deleteLibrary'])->name('superadmin.library.delete');
+    Route::post('/library/{id}/toggle', [SuperAdminController::class, 'toggleStatus'])->name('superadmin.library.toggle');
+    Route::post('/library/{id}/message', [SuperAdminController::class, 'saveMessage'])->name('superadmin.library.message');
 });
 
-// Dashboard (Protected later if needed)
-Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-
-// Seat Management Routes
-Route::get('/seats', [SeatController::class, 'index'])->name('seats.index');
-Route::post('/seats', [SeatController::class, 'store'])->name('seats.store');
-Route::put('/seats/{seat}', [SeatController::class, 'update'])->name('seats.update');
-Route::delete('/seats/{seat}', [SeatController::class, 'destroy'])->name('seats.destroy');
-
-// Student Management Routes
-Route::resource('students', StudentController::class)->except(['create', 'show', 'edit']);
-
-// Booking Management Routes
-Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
-Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
-Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
+// Dashboard & Other Protected Routes
+Route::middleware(['check_active'])->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/pending-payments', [AdminController::class, 'pendingPayments'])->name('admin.pending_payments');
+    
+    // Seat Management Routes
+    Route::get('/seats', [SeatController::class, 'index'])->name('seats.index');
+    Route::post('/seats', [SeatController::class, 'store'])->name('seats.store');
+    Route::put('/seats/{seat}', [SeatController::class, 'update'])->name('seats.update');
+    Route::delete('/seats/{seat}', [SeatController::class, 'destroy'])->name('seats.destroy');
+    
+    // Student Management Routes
+    Route::resource('students', StudentController::class)->except(['create', 'show', 'edit']);
+    
+    // Booking Management Routes
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
+});

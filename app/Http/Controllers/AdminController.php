@@ -28,13 +28,32 @@ class AdminController extends Controller
         $availableSeats = Seat::where('library_id', $library->id)->where('status', 'available')->count();
         $totalStudents = Student::where('library_id', $library->id)->count();
         $activeBookings = Booking::where('library_id', $library->id)->where('end_date', '>=', now())->count();
+        $pendingPaymentsCount = Booking::where('library_id', $library->id)->where('payment_status', 'Pending')->distinct('student_id')->count('student_id');
         
         return view('admin.dashboard', compact(
             'library', 
             'totalSeatsCount', 
             'availableSeats', 
             'totalStudents', 
-            'activeBookings'
+            'activeBookings',
+            'pendingPaymentsCount'
         ));
+    }
+
+    public function pendingPayments()
+    {
+        if (!Session::has('library_id')) {
+            return redirect()->route('home');
+        }
+
+        $library = LibrarySetting::find(Session::get('library_id'));
+
+        // Fetch bookings with 'Pending' status and their associated students
+        $bookings = Booking::with('student', 'seat')
+            ->where('library_id', $library->id)
+            ->where('payment_status', 'Pending')
+            ->get();
+
+        return view('admin.pending_payments', compact('library', 'bookings'));
     }
 }

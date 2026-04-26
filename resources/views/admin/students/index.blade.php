@@ -4,7 +4,7 @@
 @section('page_title', 'Library Members')
 
 @section('content')
-<div class="p-8 space-y-8 flex-1">
+<div class="p-4 md:p-8 space-y-6 md:space-y-8 flex-1">
     
     <!-- Add Student Section -->
     <div class="glass-panel p-6 rounded-2xl">

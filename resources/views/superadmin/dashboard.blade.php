@@ -6,6 +6,7 @@
     <title>Super Admin Dashboard</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #020617; color: white; }
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
@@ -60,12 +61,13 @@
                         <th class="px-6 py-4 text-sm font-semibold text-gray-400 text-center">Seats</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-400">Usage Duration</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-400">Auth Info</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-400 text-center">Status</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-400 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
                     @foreach($libraries as $lib)
-                    <tr class="hover:bg-white/5 transition-all group">
+                    <tr class="hover:bg-white/5 transition-all group" x-data="{ openMsg: false }">
                         <td class="px-6 py-6">
                             <p class="font-bold text-lg group-hover:text-indigo-400 transition-colors">{{ $lib->library_name }}</p>
                             <p class="text-sm text-gray-400">{{ $lib->owner_name }}</p>
@@ -81,31 +83,76 @@
                             <p class="text-[10px] text-gray-500 uppercase">Since {{ $lib->created_at->format('M d, Y') }}</p>
                         </td>
                         <td class="px-6 py-6">
-                            <p class="text-sm text-white">{{ $lib->email }}</p>
-                            @if($lib->mobile_number)
-                                <p class="text-xs text-indigo-300 font-mono mt-1">📞 {{ $lib->mobile_number }}</p>
-                            @endif
-                            <p class="text-xs text-emerald-500 font-mono mt-1">Password: 
-                                @php
-                                    try {
-                                        $decryptedPassword = \Illuminate\Support\Facades\Crypt::decryptString($lib->password);
-                                    } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-                                        $decryptedPassword = 'Hash (Update Required)';
-                                    }
-                                @endphp
-                                {{ $decryptedPassword }}
-                            </p>
+                            <div class="space-y-1">
+                                <p class="text-sm text-white">{{ $lib->email }}</p>
+                                @if($lib->mobile_number)
+                                    <p class="text-xs text-indigo-300 font-mono">📞 {{ $lib->mobile_number }}</p>
+                                @endif
+                                <p class="text-xs text-emerald-500 font-mono">Password: 
+                                    @php
+                                        try {
+                                            $decryptedPassword = \Illuminate\Support\Facades\Crypt::decryptString($lib->password);
+                                        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                                            $decryptedPassword = 'Hash (Update Required)';
+                                        }
+                                    @endphp
+                                    {{ $decryptedPassword }}
+                                </p>
+                                @if($lib->alert_message)
+                                    <div class="mt-2 text-[10px] bg-amber-500/10 text-amber-400 p-2 rounded border border-amber-500/20">
+                                        <strong>Current Message:</strong> {{ $lib->alert_message }}
+                                    </div>
+                                @endif
+                            </div>
                         </td>
-                        <td class="px-6 py-6 text-right space-x-2">
-                            <a href="{{ route('superadmin.library.edit', $lib->id) }}" class="inline-block bg-white/10 hover:bg-indigo-600 p-2 rounded-lg transition-all" title="Edit Library">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </a>
-                            <form action="{{ route('superadmin.library.delete', $lib->id) }}" method="POST" class="inline-block">
-                                @csrf @method('DELETE')
-                                <button type="submit" onclick="return confirm('Are you sure you want to delete this library?')" class="bg-white/10 hover:bg-red-600 p-2 rounded-lg transition-all" title="Delete Library">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <td class="px-6 py-6 text-center">
+                            @if($lib->is_active)
+                                <span class="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-emerald-500/20">Active</span>
+                            @else
+                                <span class="bg-red-500/10 text-red-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-red-500/20">Inactive</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-6 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button @click="openMsg = !openMsg" class="p-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-600 text-indigo-500 transition-all" title="Send Message">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
                                 </button>
-                            </form>
+                                <form action="{{ route('superadmin.library.toggle', $lib->id) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    <button type="submit" class="p-2 rounded-lg transition-all {{ $lib->is_active ? 'bg-amber-500/10 hover:bg-amber-600 text-amber-500' : 'bg-emerald-500/10 hover:bg-emerald-600 text-emerald-500' }}" title="{{ $lib->is_active ? 'Deactivate' : 'Activate' }} Library">
+                                        @if($lib->is_active)
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                                        @else
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        @endif
+                                    </button>
+                                </form>
+                                <a href="{{ route('superadmin.library.edit', $lib->id) }}" class="inline-block bg-white/10 hover:bg-indigo-600 p-2 rounded-lg transition-all" title="Edit Library">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </a>
+                                <form action="{{ route('superadmin.library.delete', $lib->id) }}" method="POST" class="inline-block">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" onclick="return confirm('Are you sure you want to delete this library?')" class="bg-white/10 hover:bg-red-600 p-2 rounded-lg transition-all" title="Delete Library">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- Message Input Box -->
+                            <div x-show="openMsg" x-transition class="mt-4 p-4 glass rounded-2xl text-left border-indigo-500/30">
+                                <form action="{{ route('superadmin.library.message', $lib->id) }}" method="POST" class="space-y-3">
+                                    @csrf
+                                    <label class="text-xs text-gray-400 uppercase">System Alert Message</label>
+                                    <textarea name="alert_message" rows="2" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-indigo-500 outline-none" placeholder="Enter message for owner...">{{ $lib->alert_message }}</textarea>
+                                    <div class="flex gap-2">
+                                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all">Save Message</button>
+                                        @if($lib->alert_message)
+                                            <button type="submit" name="alert_message" value="" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-red-500/20">Clear</button>
+                                        @endif
+                                        <button type="button" @click="openMsg = false" class="bg-white/5 hover:bg-white/10 px-4 py-1.5 rounded-lg text-xs transition-all">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @endforeach

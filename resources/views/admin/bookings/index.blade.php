@@ -4,13 +4,13 @@
 @section('page_title', 'Seat Bookings')
 
 @section('content')
-<div class="p-8 space-y-8 flex-1">
+<div class="p-4 md:p-8 space-y-6 md:space-y-8 flex-1">
     
     <!-- Add Booking Section -->
     <div class="glass-panel p-6 rounded-2xl">
         <h3 class="text-xl font-semibold text-white mb-4">Create New Booking</h3>
         
-        <form action="{{ route('bookings.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <form action="{{ route('bookings.store') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             @csrf
             
             <div class="flex flex-col">
@@ -29,7 +29,13 @@
                 <select name="seat_id" id="seat_id" class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" required>
                     <option value="" disabled selected>Choose a seat...</option>
                     @foreach($availableSeats as $seat)
-                        <option value="{{ $seat->id }}" class="text-emerald-400" {{ old('seat_id') == $seat->id ? 'selected' : '' }}>{{ $seat->seat_number }} (Available)</option>
+                        @php
+                            $activeShift = $seat->bookings()->where('end_date', '>=', now()->toDateString())->first();
+                            $statusText = $activeShift ? "({$activeShift->shift_type} Occupied)" : "(Available)";
+                        @endphp
+                        <option value="{{ $seat->id }}" class="{{ $activeShift ? 'text-amber-400' : 'text-emerald-400' }}" {{ old('seat_id') == $seat->id ? 'selected' : '' }}>
+                            {{ $seat->seat_number }} {{ $statusText }}
+                        </option>
                     @endforeach
                 </select>
                 @error('seat_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror

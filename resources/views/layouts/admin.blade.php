@@ -10,16 +10,41 @@
         body { font-family: 'Outfit', sans-serif; background-color: #0f1115; color: #f3f4f6; }
         .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .gradient-text { background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; color: transparent; }
+        /* Mobile sidebar overlay */
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40; }
+        .sidebar-overlay.active { display: block; }
+        @media (max-width: 767px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; position: fixed; z-index: 50; height: 100vh; }
+            .sidebar.open { transform: translateX(0); }
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
 
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed top-0 left-0 right-0 h-14 glass-panel flex items-center justify-between px-4 z-30">
+        <button onclick="toggleSidebar()" class="text-white p-2 rounded-lg hover:bg-white/10 transition" id="menu-btn">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <h1 class="text-sm font-bold gradient-text truncate">📚 {{ session('library_name', 'EasyLibrary') }}</h1>
+        <span class="text-[10px] px-2 py-1 bg-white/5 rounded-full text-gray-400 border border-white/10">
+            {{ date('M j') }}
+        </span>
+    </div>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar -->
-    <aside class="w-72 glass-panel flex flex-col h-full shrink-0">
-        <div class="h-16 flex items-center px-6 border-b border-gray-800">
+    <aside class="sidebar w-72 glass-panel flex flex-col h-full shrink-0" id="sidebar">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-800">
             <h1 class="text-xl font-bold gradient-text tracking-wide space-x-1 truncate">
                 <span>📚</span> <span>{{ session('library_name', 'EasyLibrary') }}</span>
             </h1>
+            <!-- Close button for mobile -->
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
         </div>
         <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-500/10 text-indigo-400' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-xl transition">
@@ -63,9 +88,9 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full bg-[#0a0a0c] overflow-y-auto">
-        <!-- Header -->
-        <header class="h-16 flex items-center justify-between px-8 glass-panel sticky top-0 z-10 p-4 shrink-0 border-x-0 border-t-0">
+    <main class="flex-1 flex flex-col h-full bg-[#0a0a0c] overflow-y-auto pt-14 md:pt-0">
+        <!-- Header (Desktop) -->
+        <header class="hidden md:flex h-16 items-center justify-between px-8 glass-panel sticky top-0 z-10 p-4 shrink-0 border-x-0 border-t-0">
             <h2 class="text-lg font-medium text-white">@yield('page_title', 'Dashboard')</h2>
             <div class="flex items-center space-x-4">
                 <span class="text-xs px-3 py-1 bg-white/5 rounded-full text-gray-400 border border-white/10">
@@ -76,15 +101,43 @@
 
         <!-- Messages -->
         @if(session('success'))
-        <div class="mx-8 mt-4 p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center">
-            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <div class="mx-4 md:mx-8 mt-4 p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center text-sm">
+            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             {{ session('success') }}
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="mx-4 md:mx-8 mt-4 p-4 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 flex items-center text-sm">
+            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {{ session('error') }}
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="mx-4 md:mx-8 mt-4 p-4 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400">
+            <div class="flex items-center mb-2">
+                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="font-bold text-sm">Please correct the following errors:</span>
+            </div>
+            <ul class="list-disc list-inside ml-8 text-sm">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
         @endif
         
         @yield('content')
         
     </main>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+    </script>
 
 </body>
 </html>

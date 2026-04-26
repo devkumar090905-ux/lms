@@ -63,6 +63,10 @@ class LandingController extends Controller
         $library = LibrarySetting::where('email', $request->email)->first();
 
         if ($library) {
+            if (!$library->is_active) {
+                return back()->withErrors(['email' => 'Your library account is suspended. Please contact the administrator.']);
+            }
+
             try {
                 if (Crypt::decryptString($library->password) === $request->password) {
                     Session::put('library_id', $library->id);

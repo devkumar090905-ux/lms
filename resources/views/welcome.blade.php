@@ -29,7 +29,7 @@
                 <div class="inline-block p-3 rounded-2xl bg-indigo-500/10 text-indigo-400">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.168.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.168.477-4.5 1.253"></path></svg>
                 </div>
-                <h1 class="text-5xl md:text-6xl font-bold leading-tight tracking-tight">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
                     Manage Your <br>
                     <span class="text-indigo-500">Library</span> Smarter.
                 </h1>
@@ -57,7 +57,7 @@
                 <!-- Registration Form -->
                 <form x-show="tab === 'register'" action="{{ route('setup') }}" method="POST" class="space-y-4">
                     @csrf
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-xs text-gray-400 uppercase tracking-wider">Owner Name</label>
                             <input type="text" name="owner_name" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:border-indigo-500 outline-none transition-all" placeholder="John Doe">
@@ -73,7 +73,7 @@
                         <textarea name="address" required rows="2" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:border-indigo-500 outline-none transition-all" placeholder="123 Street, City..."></textarea>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="space-y-1">
                             <label class="text-xs text-gray-400 uppercase tracking-wider">Total Seats</label>
                             <input type="number" name="total_seats" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:border-indigo-500 outline-none transition-all" placeholder="50">
@@ -88,7 +88,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-xs text-gray-400 uppercase tracking-wider">Email Address</label>
                             <input type="email" name="email" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:border-indigo-500 outline-none transition-all" placeholder="owner@example.com">

@@ -16,6 +16,8 @@ class LibrarySetting extends Model
         'email',
         'mobile_number',
         'password',
+        'is_active',
+        'alert_message',
     ];
 
     public function seats()

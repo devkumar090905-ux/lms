@@ -68,11 +68,13 @@ class SuperAdminController extends Controller
             'total_seats' => 'required|integer',
         ]);
 
-        $library->update($request->all());
+        $data = $request->except('password');
 
         if ($request->filled('password')) {
-            $library->update(['password' => Crypt::encryptString($request->password)]);
+            $data['password'] = Crypt::encryptString($request->password);
         }
+
+        $library->update($data);
 
         return redirect()->route('superadmin.dashboard')->with('success', 'Library updated successfully');
     }
@@ -81,6 +83,28 @@ class SuperAdminController extends Controller
     {
         LibrarySetting::destroy($id);
         return back()->with('success', 'Library deleted successfully');
+    }
+
+    public function toggleStatus($id)
+    {
+        $library = LibrarySetting::findOrFail($id);
+        $library->is_active = !$library->is_active;
+        $library->save();
+
+        $status = $library->is_active ? 'Activated' : 'Deactivated';
+        return back()->with('success', "Library $status successfully");
+    }
+
+    public function saveMessage(Request $request, $id)
+    {
+        $request->validate([
+            'alert_message' => 'nullable|string'
+        ]);
+
+        $library = LibrarySetting::findOrFail($id);
+        $library->update(['alert_message' => $request->alert_message]);
+
+        return back()->with('success', 'Message saved successfully');
     }
 
     public function logout()

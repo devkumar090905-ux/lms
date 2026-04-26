@@ -13,7 +13,15 @@ class SeatController extends Controller
     public function index()
     {
         $libraryId = Session::get('library_id');
-        $seats = Seat::where('library_id', $libraryId)->orderBy('seat_number')->get();
+        // Natural sorting at DB level: first by length, then by value
+        $seats = Seat::with(['bookings' => function($query) {
+            $query->where('end_date', '>=', now()->toDateString());
+        }])
+        ->where('library_id', $libraryId)
+        ->orderByRaw('LENGTH(seat_number) ASC')
+        ->orderBy('seat_number', 'ASC')
+        ->get();
+
         return view('admin.seats.index', compact('seats'));
     }
 
