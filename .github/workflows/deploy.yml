@@ -1,0 +1,69 @@
+name: 🚀 Deploy to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: 🚀 Deploy Laravel to Hostinger
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup PHP
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json, bcmath, curl, mysql
+          coverage: none
+
+      # Step 3: Install Composer Dependencies
+      - name: 📥 Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # Step 4: Setup Node.js & Build Assets
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install NPM Dependencies
+        run: npm ci
+
+      - name: 🔨 Build Assets (Vite)
+        run: npm run build
+
+      # Step 5: Deploy to Hostinger via SSH
+      - name: 🚀 Deploy to Hostinger via SSH
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          SOURCE: "./"
+          TARGET: ${{ secrets.REMOTE_TARGET }}
+          EXCLUDE: ".git, .github, node_modules, .env, .env.production, tests, storage/logs/*, storage/framework/cache/*, storage/framework/sessions/*, storage/framework/views/*"
+
+      # Step 6: Run post-deployment commands on server
+      - name: ⚙️ Run Post-Deployment Commands
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: |
+            cd ${{ secrets.REMOTE_TARGET }}
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan optimize
