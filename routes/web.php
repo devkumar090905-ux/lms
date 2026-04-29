@@ -46,5 +46,6 @@ Route::middleware(['check_active'])->group(function () {
     // Booking Management Routes
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::post('/bookings/{booking}/pay', [BookingController::class, 'markAsPaid'])->name('bookings.pay');
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
 });

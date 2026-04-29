@@ -28,7 +28,13 @@ class AdminController extends Controller
         $availableSeats = Seat::where('library_id', $library->id)->where('status', 'available')->count();
         $totalStudents = Student::where('library_id', $library->id)->count();
         $activeBookings = Booking::where('library_id', $library->id)->where('end_date', '>=', now())->count();
-        $pendingPaymentsCount = Booking::where('library_id', $library->id)->where('payment_status', 'Pending')->distinct('student_id')->count('student_id');
+        $pendingPaymentsCount = Booking::where('library_id', $library->id)
+            ->where(function($query) {
+                $query->where('payment_status', 'Pending')
+                      ->orWhere('end_date', '<', now()->toDateString());
+            })
+            ->distinct('student_id')
+            ->count('student_id');
         
         return view('admin.dashboard', compact(
             'library', 
@@ -48,10 +54,13 @@ class AdminController extends Controller
 
         $library = LibrarySetting::find(Session::get('library_id'));
 
-        // Fetch bookings with 'Pending' status and their associated students
+        // Fetch bookings with 'Pending' status OR those whose end_date has passed
         $bookings = Booking::with('student', 'seat')
             ->where('library_id', $library->id)
-            ->where('payment_status', 'Pending')
+            ->where(function($query) {
+                $query->where('payment_status', 'Pending')
+                      ->orWhere('end_date', '<', now()->toDateString());
+            })
             ->get();
 
         return view('admin.pending_payments', compact('library', 'bookings'));

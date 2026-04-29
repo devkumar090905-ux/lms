@@ -106,4 +106,25 @@ class BookingController extends Controller
         
         return redirect()->back()->with('success', 'Booking closed and seat status updated!');
     }
+
+    public function markAsPaid(Booking $booking)
+    {
+        // If the month is complete, renew it for another month
+        if ($booking->end_date < now()->toDateString()) {
+            $newStartDate = now()->toDateString();
+            $newEndDate = now()->addMonth()->toDateString();
+            
+            $booking->update([
+                'payment_status' => 'Paid',
+                'start_date' => $newStartDate,
+                'end_date' => $newEndDate
+            ]);
+            
+            return redirect()->back()->with('success', 'Payment marked as Paid and Booking renewed for another month!');
+        }
+
+        // If it was just pending, mark as paid
+        $booking->update(['payment_status' => 'Paid']);
+        return redirect()->back()->with('success', 'Payment marked as Paid!');
+    }
 }

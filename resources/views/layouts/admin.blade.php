@@ -138,6 +138,6 @@
             document.getElementById('sidebar-overlay').classList.toggle('active');
         }
     </script>
-
+    @stack('scripts')
 </body>
 </html>
