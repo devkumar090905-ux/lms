@@ -18,7 +18,11 @@ class BookingController extends Controller
         $students = Student::where('library_id', $libraryId)->orderBy('name')->get();
         
         // Fetch seats and filter based on shift availability
-        $allSeats = Seat::where('library_id', $libraryId)->orderBy('seat_number')->get();
+        $allSeats = Seat::where('library_id', $libraryId)
+            ->orderByRaw('LENGTH(seat_number) ASC')
+            ->orderBy('seat_number', 'ASC')
+            ->get();
+            
         $availableSeats = $allSeats->filter(function($seat) {
             $activeBookings = $seat->bookings()->where('end_date', '>=', now()->toDateString())->get();
             
